@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Node Chat</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+var socket;
+var room = "room_one";
+$(document).ready(function() {
+	
+	socket = io.connect();
+	
+	socket.on("displayMessage", function (data) {
+		var num = $(".message_box").children("p").length;
+		console.log(num);
+		var messageString = "<p>"+data+"</p>";
+		if (num >= 10) { $(".message_box").children("p:first").remove();}
+		$(".message_box").append(messageString);
+	});
+	
+	socket.on("clear_room", function(){
+		$(".message_box").children("p").html("&nbsp;");
+	});
+	
+	$(".submit_button").click(function(e){
+		e.preventDefault();
+		var message = $(".message_input").val();
+		if (message != "") socket.emit("chatMessage", [room, message]);
+		$(".message_input").val("");
+	});
+	
+	$(".room_button").click(function(e){
+		e.preventDefault();
+		var old_room = room;
+		window.room = $(this).data("room");
+		var join_event = "join_"+room;
+		socket.emit(join_event, [old_room, room]);
+	});
+	
+});
+</script>
+</head>
+
+<body>
+	<div class="rooms" style="margin-bottom:10px;">
+      <form>
+          <input class="room_button" data-room="room_one" type="submit" value="Room 1" />
+          <input class="room_button" data-room="room_two" type="submit" value="Room 2" />
+          <input class="room_button" data-room="room_three" type="submit" value="Room 3" />
+          <input class="room_button" data-room="room_four" type="submit" value="Room 4" />
+          <input class="room_button" data-room="room_five" type="submit" value="Room 5" />
+      </form>
+    </div>
+	<div class="page">
+	<div class="header"> Chat Room </div>
+    <div class="message_box">
+      <p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
+    </div>
+    <div class="message_form">
+	  <form>
+    	  <input class="message_input" type="text" name="message_val" />
+          <input class="submit_button" type="submit" value="Submit" />
+      </form>
+    </div>
+    </div>
+</body>
+
+
+
+</html>
